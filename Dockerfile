@@ -18,9 +18,11 @@ RUN cd /app \
     && source $HOME/.cargo/env \
     && cargo build --release
 
-FROM archlinux:latest
 ARG TASK_ADDON_BUGWARRIOR="false"
 ARG TASK_ADDON_BUGWARRIOR_FEATURES=""
+FROM archlinux:latest
+ARG TASK_ADDON_BUGWARRIOR
+ARG TASK_ADDON_BUGWARRIOR_FEATURES
 
 # Install
 RUN echo "NoExtract = !usr/share/doc/timew/*" >> /etc/pacman.conf \
