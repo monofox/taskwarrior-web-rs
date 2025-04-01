@@ -48,5 +48,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args:
-            - TASK_ADDON_BUGWARRIOR="true"
-            - TASK_ADDON_BUGWARRIOR_FEATURES="jira"
+            TASK_ADDON_BUGWARRIOR="true"
+            TASK_ADDON_BUGWARRIOR_FEATURES="jira"
