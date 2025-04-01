@@ -18,11 +18,7 @@ RUN cd /app \
     && source $HOME/.cargo/env \
     && cargo build --release
 
-ARG TASK_ADDON_BUGWARRIOR="true"
-ARG TASK_ADDON_BUGWARRIOR_FEATURES="jira"
 FROM archlinux:latest
-ARG TASK_ADDON_BUGWARRIOR
-ARG TASK_ADDON_BUGWARRIOR_FEATURES
 
 # Install
 RUN echo "NoExtract = !usr/share/doc/timew/*" >> /etc/pacman.conf \
@@ -37,7 +33,7 @@ RUN echo "NoExtract = !usr/share/doc/timew/*" >> /etc/pacman.conf \
  && mkdir -p /app/.task/hooks \
  && mkdir -p /app/.timewarrior/data/ \
  && cp /usr/share/doc/timew/ext/on-modify.timewarrior /app/.task/hooks/on-modify.timewarrior \
- && ( [[ $TASK_ADDON_BUGWARRIOR != "true" ]] || python3 -m pip install --break-system-packages bugwarrior[$TASK_ADDON_BUGWARRIOR_FEATURES]@git+https://github.com/GothenburgBitFactory/bugwarrior.git ) \
+ && python3 -m pip install --break-system-packages bugwarrior[jira]@git+https://github.com/GothenburgBitFactory/bugwarrior.git \
  # cleanup
  && pacman --noconfirm -R git python-pip \ 
  && echo "delete orphaned" \
