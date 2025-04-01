@@ -6,6 +6,7 @@ use indexmap::IndexMap;
 use rand::distr::{Alphanumeric, SampleString};
 use std::collections::{HashMap, HashSet};
 use std::env;
+use std::process::Command;
 use std::string::ToString;
 use taskwarrior_web::endpoints::tasks;
 use taskwarrior_web::endpoints::tasks::task_query_builder::TaskQuery;
@@ -56,6 +57,7 @@ async fn main() {
         .route("/task_action_bar", get(get_task_action_bar))
         .route("/task_details", get(display_task_details))
         .route("/bars", get(get_bar))
+        .route("/bugwarrior/pull", get(bugwarrior_pull))
         .with_state(app_settings);
 
     // run our app with hyper, listening globally on port 3000
@@ -121,6 +123,21 @@ async fn get_bar(
     } else {
         Html("".to_string())
     }
+}
+
+async fn bugwarrior_pull() -> Html<String> {
+    match Command::new("bugwarrior")
+        .arg("pull")
+        .output() {
+            Ok(msg) => {
+                info!("Bugwarrior pull was executed. Status: {}", &msg.status.to_string());
+            },
+            Err(e) => {
+                error!("Bugwarrior pull failed executing. Status: {}", &e.to_string());
+            },
+        }
+
+    Html("".to_string())
 }
 
 async fn get_tag_bar(app_state: State<AppState>) -> Html<String> {
