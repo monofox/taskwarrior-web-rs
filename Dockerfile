@@ -1,5 +1,5 @@
 FROM archlinux:latest AS rustbase
-RUN pacman -Suy --needed --noconfirm curl base-devel npm
+RUN pacman -Suy --needed --noconfirm curl base-devel npm 
 RUN mkdir /app \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh \
     && chmod +x rustup.sh \
@@ -21,7 +21,7 @@ FROM archlinux:latest
 RUN echo "NoExtract = !usr/share/doc/timew/*" >> /etc/pacman.conf \
  && echo "NoExtract = !usr/share/doc/task/*" >> /etc/pacman.conf \
  && pacman -Suy --needed --noconfirm git python \
- && pacman -S --noconfirm task timew \
+ && pacman -S --noconfirm task timew cronie vi \
  && pacman -S --noconfirm python-pip \
  && useradd -m -d /app task && passwd -d task \
  && chown -R task:task /app && chmod -R 775 /app \
@@ -29,11 +29,12 @@ RUN echo "NoExtract = !usr/share/doc/timew/*" >> /etc/pacman.conf \
  && mkdir -p /app/taskdata \
  && mkdir -p /app/.task/hooks \
  && mkdir -p /app/.timewarrior/data/ \
+ && systemctl enable cronie.service \
  && cp /usr/share/doc/timew/ext/on-modify.timewarrior /app/.task/hooks/on-modify.timewarrior \
  && python3 -m pip install --break-system-packages bugwarrior[jira]@git+https://github.com/GothenburgBitFactory/bugwarrior.git \
  # cleanup
  && pacman --noconfirm -R git python-pip \ 
- && echo "delete orphaned" \
+ && echo "delete orphaned" \ 
  && pacman --noconfirm -Qdtq | pacman --noconfirm -Rs - \
  && echo "clear cache" \
  && pacman --noconfirm -Sc \
