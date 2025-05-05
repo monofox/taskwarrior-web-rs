@@ -15,6 +15,32 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  test_and_coverage:
+    name: Test and create coverage report.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Taskwarrior
+        run: |
+          sudo apt-get update
+          echo "confirmation=off" | sudo tee -a /root/.taskrc
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install taskwarrior
+          echo "yes" | task || true
+      - name: Run Tests and Upload Coverage
+        uses: Reloaded-Project/devops-rust-test-and-coverage@v1
+        with:
+          setup-rust-cache: true
+          rust-project-path: '.'
+          rust-toolchain: 'nightly'
+          use-tarpaulin: true
+          upload-coverage: false
+          target: 'x86_64-unknown-linux-gnu'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "Coverage report"
+          path: cobertura.xml
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -27,13 +53,18 @@ jobs:
           echo "RELEASE_NAME=${{ env.BUILD_DATE }}" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Tools
-        run: |
-          curl -o tailwindcss -sL https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64 && chmod +x tailwindcss
       - name: Setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: nightly
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Building
         run: |
             cargo build --release
@@ -41,6 +72,7 @@ jobs:
             tar czf tw-web-${{ env.RELEASE_NAME }}.tar.gz dist taskwarrior-web
       - name: Release
         uses: softprops/action-gh-release@v2
+        if: ${{ github.event_name != 'pull_request' }}
         with:
           prerelease: true
           tag_name: ${{ env.TAG_NAME }}
