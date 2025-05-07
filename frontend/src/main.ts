@@ -24,7 +24,7 @@ function focusTextInput(event: KeyboardEvent | MouseEvent) {
         event.preventDefault()
         ss.focus();
     } else {
-        document.getElementById('cmd-inp').focus();
+        document.getElementById('cmd-inp')?.focus();
     }
 }
 
@@ -35,11 +35,11 @@ window.handleTaskAnnotations = (event: KeyboardEvent | MouseEvent) => {
     }
     event.preventDefault();
     let annoSelector = document.getElementById('anno-inp');
-    document.querySelector('#anno-inp').classList.toggle('hidden');
+    document.querySelector('#anno-inp')?.classList.toggle('hidden');
     Array.from(document.querySelectorAll('.is-a-annotation')).forEach((value) => {
         value.classList.toggle('hidden');
     });
-    if (annoSelector.checkVisibility()) {
+    if (annoSelector?.checkVisibility()) {
         annoSelector.focus();
     }
     return false;
@@ -60,28 +60,22 @@ window.handleTaskAnnotationTrigger = (event: KeyboardEvent | MouseEvent) => {
 
 hotkeys('esc', function (event, handler) {
     // Prevent the default refresh event under WINDOWS system
-    if(event.target != document.getElementById('tag-inp')) {
+    if(event.target != document.getElementById('tag-inp') &&
+        event.target != document.getElementById('query-inp')) {
         console.log("not processing")
         return
     }
-    event.preventDefault()
-    let tag_selector = document.getElementById('cmd-inp')
-    document.querySelector('#tags_map_drawer').classList.toggle('hidden')
-    if (tag_selector.checkVisibility()) {
+    event.preventDefault();
+    let tag_selector = document.getElementById('cmd-inp');
+    if (event.target == document.getElementById('tag-inp')) {
+        document.querySelector('#tags_map_drawer')?.classList.toggle('hidden');
+    } else if (event.target == document.getElementById('query-inp')) {
+        document.querySelector('#querys_map_drawer')?.classList.toggle('hidden');
+    }
+    if (tag_selector?.checkVisibility()) {
         tag_selector.focus();
     }
     return false;
-});
-
-hotkeys('t', function (event, handler) {
-    // Prevent the default refresh event under WINDOWS system
-    if(event.target != document.getElementById('cmd-inp')) {
-        console.log("not processing")
-        return
-    }
-    event.preventDefault()
-    window['toggleTagPanel']();
-
 });
 
 hotkeys('ctrl+shift+K', function (event, handler) {
@@ -91,14 +85,41 @@ hotkeys('ctrl+shift+K', function (event, handler) {
     return false;
 });
 
-window['toggleTagPanel'] = () => {
-    let tagSelector = document.getElementById('tag-inp')
-    document.querySelector('#tags_map_drawer').classList.toggle('hidden')
-    if (tagSelector.checkVisibility()) {
+hotkeys('t', function (event, handler) {
+    // Prevent the default refresh event under WINDOWS system
+    if(event.target != document.getElementById('cmd-inp')) {
+        console.debug("not processing")
+        return
+    }
+    event.preventDefault()
+    window['togglePanel']('tag');
+});
+
+hotkeys('q', function (event, handler) {
+    // Prevent the default refresh event under WINDOWS system
+    if(event.target != document.getElementById('cmd-inp')) {
+        console.debug("not processing")
+        return
+    }
+    event.preventDefault()
+    window['togglePanel']('query');
+});
+
+window['togglePanel'] = (panelType: string) => {
+    let tagSelector = document.getElementById(panelType + '-inp')
+    document.querySelector('#' + panelType + 's_map_drawer')?.classList.toggle('hidden')
+    if (tagSelector?.checkVisibility()) {
         tagSelector.focus();
     }
     return false;
-}
+};
+
+window['processPanelShortcut'] = (event: KeyboardEvent, panelType: string) {
+    const shortcut = event.target?.value;
+    if (shortcut.length >= 2) { 
+        document.getElementById(panelType + "s_" + shortcut)?.click() 
+    };
+};
 
 document.addEventListener('click', function (event) {
     let element = document.getElementsByTagName('html')[0];
